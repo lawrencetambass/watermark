@@ -1,532 +1,239 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lawrence Tam Lok Hang | 音樂演奏及提琴製作</title>
-
-    <!-- Facebook / Open Graph Meta Tags -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="您的網址連結">
-    <meta property="og:title" content="Lawrence Tam Lok Hang | 音樂演奏及提琴製作">
-    <meta property="og:description" content="結合卓越演奏技巧與深厚提琴製作造詣，為每一位學生開啟通往音樂藝術與職人工藝的大門。">
-    <meta property="og:image" content="https://lh3.googleusercontent.com/d/1sRDlEqJKQ7w3B4pu1WB6BikzOR0xCpAU">
-
+    <title>PDF 網格浮水印產生器</title>
+    <!-- 引入必要的函式庫 -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            scroll-behavior: smooth;
-        }
-        .serif {
-            font-family: 'Playfair Display', serif;
-        }
-        .hero-section {
-            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), 
-                        url('https://lh3.googleusercontent.com/d/1sRDlEqJKQ7w3B4pu1WB6BikzOR0xCpAU');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: #1a1a1a;
-        }
-        .nav-link:hover {
-            color: #d4af37;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            transition: all 0.3s ease;
-        }
-        .gold-text { color: #d4af37; }
-        .gold-bg { background-color: #d4af37; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
-        .profile-img-container {
-            position: relative;
-            background-color: #f3f4f6;
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
         }
 
-        .price-image-container {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transition: transform 0.3s ease;
-        }
-        .price-image-container:hover {
-            transform: scale(1.02);
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .lang-btn {
-            cursor: pointer;
-            transition: all 0.2s;
-            opacity: 0.6;
-        }
-        .lang-btn.active {
-            opacity: 1;
-            color: #d4af37;
-            font-weight: bold;
-        }
-
-        /* 複製提示氣泡樣式 */
-        #copy-toast {
-            visibility: hidden;
-            min-width: 200px;
-            background-color: #d4af37;
-            color: #000;
-            text-align: center;
-            border-radius: 50px;
-            padding: 12px;
-            position: fixed;
-            z-index: 100;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        #copy-toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
-        }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* 自定義 Carousell 圖示顏色 */
-        .fa-carousell {
-            position: relative;
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
             display: inline-block;
-            width: 1em;
-            height: 1em;
-            background-color: currentColor;
-            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2003/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5c4.142 0 7.5 3.358 7.5 7.5s-3.358 7.5-7.5 7.5-7.5-3.358-7.5-7.5 3.358-7.5 7.5-7.5z'/%3E%3C/svg%3E") no-repeat center;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2003/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5c4.142 0 7.5 3.358 7.5 7.5s-3.358 7.5-7.5 7.5-7.5-3.358-7.5-7.5 3.358-7.5 7.5-7.5z'/%3E%3C/svg%3E") no-repeat center;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="flex items-center justify-center p-4">
 
-    <!-- 複製提示氣泡 -->
-    <div id="copy-toast">已複製郵件地址！</div>
+    <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl p-8">
+        <div class="text-center mb-8">
+            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">PDF 網格浮水印</h1>
+            <p class="text-gray-500 text-sm mt-2">安全、快速、本地處理</p>
+        </div>
 
-    <!-- 導覽欄 -->
-    <nav class="fixed w-full z-50 bg-black/90 text-white py-4 px-6 md:px-12 flex justify-between items-center backdrop-blur-md border-b border-gray-800">
-        <div class="text-xl font-bold serif tracking-wider gold-text">LAWRENCE TAM</div>
-        <div class="hidden md:flex space-x-6 items-center text-sm font-medium">
-            <a href="#home" class="nav-link" data-i18n="nav_home">首頁</a>
-            <a href="#about" class="nav-link" data-i18n="nav_about">個人簡介</a>
-            <a href="#qualifications" class="nav-link" data-i18n="nav_qualifications">專業資格</a>
-            <a href="#pricing" class="nav-link" data-i18n="nav_pricing">價目表</a>
-            <a href="#craft" class="nav-link" data-i18n="nav_craft">提琴製作</a>
-            <a href="#videos" class="nav-link" data-i18n="nav_videos">示範影片</a>
-            <a href="#location" class="nav-link" data-i18n="nav_location">上課地點</a>
-            
-            <div class="flex items-center space-x-2 border-l border-gray-700 pl-6 ml-2">
-                <span onclick="changeLanguage('zh')" id="lang-zh" class="lang-btn active">中文</span>
-                <span class="text-gray-600">/</span>
-                <span onclick="changeLanguage('en')" id="lang-en" class="lang-btn text-xs">EN</span>
+        <div class="space-y-5">
+            <!-- 浮水印文字輸入 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">浮水印文字</label>
+                <input type="text" id="wmText" value="INTERNAL USE ONLY" 
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="輸入要顯示的文字...">
             </div>
 
-            <div class="flex space-x-4 border-l border-gray-700 pl-6 ml-2">
-                <a href="https://www.facebook.com/LawrenceTamDoubleBass" target="_blank" class="hover:text-[#1877F2] transition-colors"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.youtube.com/@lawrencetambass" target="_blank" class="hover:text-red-600 transition-colors"><i class="fab fa-youtube"></i></a>
-                <a href="https://carousell.app.link/aXB4DWi7z1b" target="_blank" class="hover:text-red-500 transition-colors" title="Carousell Store"><i class="fas fa-shopping-bag"></i></a>
+            <!-- 檔案上傳區 -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">選擇 PDF 檔案</label>
+                <div class="relative">
+                    <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
+                    <label for="pdfFile" id="fileLabel" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span class="text-xs text-gray-500 px-4 text-center" id="fileNameDisplay">點擊或拖放 PDF</span>
+                    </label>
+                </div>
             </div>
-            <a href="https://forms.gle/xk7CkR2RhxB2kfZd7" target="_blank" class="nav-link px-4 py-2 border border-[#d4af37] rounded-full gold-text hover:bg-[#d4af37] hover:text-black transition-all ml-4 font-bold" data-i18n="nav_apply">立即報名</a>
-        </div>
-        <button class="md:hidden text-2xl" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
-    </nav>
 
-    <!-- 手機選單 -->
-    <div id="mobile-menu" class="fixed inset-0 bg-black z-40 hidden flex-col justify-center items-center space-y-6 text-white text-xl">
-        <a href="#home" onclick="toggleMenu()" data-i18n="nav_home">首頁</a>
-        <a href="#about" onclick="toggleMenu()" data-i18n="nav_about">個人簡介</a>
-        <a href="#qualifications" onclick="toggleMenu()" data-i18n="nav_qualifications">專業資格</a>
-        <a href="#pricing" onclick="toggleMenu()" data-i18n="nav_pricing">價目表</a>
-        <a href="#craft" onclick="toggleMenu()" data-i18n="nav_craft">提琴製作</a>
-        <a href="#videos" onclick="toggleMenu()" data-i18n="nav_videos">示範影片</a>
-        <a href="#location" onclick="toggleMenu()" data-i18n="nav_location">上課地點</a>
-        
-        <div class="flex items-center space-x-4 pt-4 border-t border-gray-800 w-1/2 justify-center">
-            <span onclick="changeLanguage('zh'); toggleMenu();" class="lang-btn active text-lg">中文</span>
-            <span class="text-gray-600">|</span>
-            <span onclick="changeLanguage('en'); toggleMenu();" class="lang-btn text-lg">English</span>
+            <!-- 操作按鈕 -->
+            <div class="grid grid-cols-1 gap-3">
+                <button id="downloadPdfBtn" class="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50">
+                    下載浮水印 PDF
+                </button>
+                <button id="downloadJpgBtn" class="flex items-center justify-center w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50">
+                    下載 JPG 圖片 (ZIP)
+                </button>
+            </div>
+
+            <!-- 狀態提示 -->
+            <div id="statusMessage" class="hidden text-center text-sm font-medium p-2 rounded-lg"></div>
         </div>
 
-        <div class="flex space-x-8 text-3xl pt-4">
-            <a href="https://www.facebook.com/LawrenceTamDoubleBass" target="_blank"><i class="fab fa-facebook"></i></a>
-            <a href="https://www.youtube.com/@lawrencetambass" target="_blank"><i class="fab fa-youtube"></i></a>
-            <a href="https://carousell.app.link/aXB4DWi7z1b" target="_blank"><i class="fas fa-shopping-bag"></i></a>
+        <div class="mt-8 pt-4 border-t border-gray-100 text-center">
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest">Local Browser Processing • No Server Upload</p>
         </div>
-        <a href="https://forms.gle/xk7CkR2RhxB2kfZd7" target="_blank" onclick="toggleMenu()" class="px-8 py-2 border border-[#d4af37] gold-text font-bold" data-i18n="nav_apply">立即報名</a>
     </div>
 
-    <!-- 英雄區 (Hero Section) -->
-    <section id="home" class="h-screen hero-section flex items-center justify-center text-center px-4">
-        <div class="max-w-4xl">
-            <h2 class="text-[#d4af37] text-lg md:text-xl mb-4 tracking-[0.2em] font-light uppercase" data-i18n="hero_sub">Cellist | Double Bassist | Luthier</h2>
-            <h1 class="text-white text-5xl md:text-7xl font-bold serif mb-6" data-i18n="hero_title">Lawrence Tam Lok Hang</h1>
-            <p class="text-gray-300 text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed" data-i18n="hero_desc">
-                結合卓越演奏技巧與深厚提琴製作造詣，<br>為每一位學生開啟通往音樂藝術與職人工藝的大門。
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#about" class="bg-white/10 text-white border border-white/30 font-bold px-12 py-4 rounded-sm hover:bg-white hover:text-black transition-all" data-i18n="btn_more">了解更多</a>
-                <a href="https://forms.gle/xk7CkR2RhxB2kfZd7" target="_blank" class="gold-bg text-black font-bold px-12 py-4 rounded-sm hover:bg-yellow-600 transition-all shadow-lg" data-i18n="btn_apply_now">線上報名</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- 關於我 -->
-    <section id="about" class="py-20 px-6 md:px-20 bg-white border-b">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div class="relative">
-                <div class="aspect-[3/4] rounded-lg overflow-hidden border-8 border-white shadow-2xl profile-img-container">
-                     <img src="https://lh3.googleusercontent.com/d/1WXdgwymmxM2uQGGgeN1cJAglz5hSt7mT" 
-                          alt="Lawrence Tam Lok Hang" 
-                          class="w-full h-full object-cover">
-                </div>
-                <div class="absolute -bottom-6 -right-6 bg-[#d4af37] p-8 hidden md:block shadow-lg">
-                    <p class="text-black font-bold text-3xl">15+</p>
-                    <p class="text-black text-sm uppercase tracking-widest font-bold" data-i18n="exp_years">教學年資</p>
-                </div>
-            </div>
-            <div>
-                <h3 class="text-3xl font-bold serif mb-6" data-i18n="about_title">關於譚老師 (Lawrence Tam)</h3>
-                <div class="space-y-6">
-                    <p class="text-gray-700 leading-relaxed" data-i18n="about_p1">
-                        譚氏身兼低音大提琴演奏家、大提琴教育家與專業提琴製作導師。於 2013 年畢業於香港演藝學院取得音樂學士學位，並於同年獲選加入<b>荷蘭國家青年交響樂團 (NJO)</b> 參與夏季巡演。2019 年，他遠赴美國「芝加哥提琴製作學院 (CSVM)」深造，將藝術演奏與科學工藝完美融合。
-                    </p>
-                    <p class="text-gray-700 leading-relaxed" data-i18n="about_p2">
-                        憑藉對樂器物理結構的透徹理解，譚氏在教學中融入了「工藝思維」，讓學生能透過對音色的精確掌握，突破技術瓶頸。他特別擅長啟盟教學，致力於在嚴謹的基礎訓練與對音樂的熱愛之間取得平衡，引領學生成為具備全面修養的音樂人。
-                    </p>
-                </div>
-                <div class="grid grid-cols-2 gap-4 mt-8">
-                    <div class="border-l-4 border-[#d4af37] pl-4">
-                        <h4 class="font-bold text-gray-900" data-i18n="about_h_performance">舞台演奏</h4>
-                        <p class="text-sm text-gray-500" data-i18n="about_desc_performance">演藝學院學士 / NJO 成員</p>
-                    </div>
-                    <div class="border-l-4 border-[#d4af37] pl-4">
-                        <h4 class="font-bold text-gray-900" data-i18n="about_h_craft">職人工藝</h4>
-                        <p class="text-sm text-gray-500" data-i18n="about_desc_craft">芝加哥 CSVM 專業畢業</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 專業資格 -->
-    <section id="qualifications" class="py-20 bg-gray-50 px-6 md:px-20 border-b">
-        <div class="max-w-6xl mx-auto text-center mb-16">
-            <h3 class="text-3xl font-bold serif mb-4 underline decoration-[#d4af37] decoration-4 underline-offset-8" data-i18n="section_qual">專業資格與資歷</h3>
-        </div>
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            <div class="bg-white p-8 shadow-sm card border-t-4 border-[#d4af37]">
-                <i class="fas fa-graduation-cap text-3xl gold-text mb-6"></i>
-                <h4 class="text-xl font-bold mb-4" data-i18n="card_1_title">學術及文憑</h4>
-                <ul class="text-gray-600 space-y-3 text-sm" id="list-qual-academic"></ul>
-            </div>
-            <div class="bg-white p-8 shadow-md card border-t-4 border-[#d4af37]">
-                <i class="fas fa-chalkboard-teacher text-3xl gold-text mb-6"></i>
-                <h4 class="text-xl font-bold mb-4" data-i18n="card_2_title">教學經驗</h4>
-                <ul class="text-gray-600 space-y-3 text-sm" id="list-qual-teaching"></ul>
-            </div>
-            <div class="bg-white p-8 shadow-md card border-t-4 border-[#d4af37]">
-                <i class="fas fa-tools text-3xl gold-text mb-6"></i>
-                <h4 class="text-xl font-bold mb-4" data-i18n="card_3_title">專業工藝</h4>
-                <ul class="text-gray-600 space-y-3 text-sm" id="list-qual-craft"></ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- 價目表 -->
-    <section id="pricing" class="py-20 bg-white px-6 md:px-20 border-b">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
-                <h3 class="text-3xl font-bold serif mb-4" data-i18n="price_title">課程價目表</h3>
-                <p class="text-gray-600" data-i18n="price_desc">透明合理的收費，提供最優質的音樂教育與專業諮詢。</p>
-            </div>
-            <div class="max-w-3xl mx-auto">
-                <div class="price-image-container rounded-2xl overflow-hidden bg-gray-100 border-4 border-white">
-                    <img src="https://lh3.googleusercontent.com/d/1jM-WzR_zMJBYnbKkrjca5Un1PPCtxjMB" alt="Price List" class="w-full h-auto block">
-                </div>
-                <p class="mt-8 text-center text-sm text-gray-500 italic" data-i18n="price_note">
-                    * 價格可能隨課程內容與學員程度有所調整，詳情請直接與譚老師聯繫。
-                </p>
-                <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="https://forms.gle/xk7CkR2RhxB2kfZd7" target="_blank" class="w-full sm:w-auto inline-block bg-black text-[#d4af37] border-2 border-[#d4af37] px-8 py-4 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-all shadow-lg text-center">
-                        <i class="fas fa-edit mr-2"></i> <span data-i18n="btn_form">填寫線上報名表</span>
-                    </a>
-                    <a href="https://wa.me/85264473995" target="_blank" class="w-full sm:w-auto inline-block bg-green-600 text-white px-8 py-4 rounded-full font-bold hover:bg-green-700 transition-all shadow-lg text-center">
-                        <i class="fab fa-whatsapp mr-2"></i> <span data-i18n="btn_whatsapp">立即 WhatsApp 查詢</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 提琴製作專區 -->
-    <section id="craft" class="py-24 bg-black text-white px-6 md:px-20">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-16">
-                <h3 class="text-3xl font-bold serif mb-6 gold-text italic">Luthiery & Artistry</h3>
-                <h4 class="text-xl mb-8" data-i18n="craft_subtitle">不只是演奏家，更是樂器醫師與職人。</h4>
-                <p class="text-gray-400 mb-10 leading-loose text-lg max-w-4xl mx-auto" data-i18n="craft_p">
-                    在芝加哥期間，隨著名造琴大賽評判 Antoine Nédélec 及資深導師 Kristin Siegfried-Ballenger 深造，專研小、中、大提琴製作。這種背景讓譚老師能從物理構造層面解決學生的音色問題。
-                </p>
-                <div class="flex justify-center mb-12">
-                     <a href="https://carousell.app.link/aXB4DWi7z1b" target="_blank" class="inline-flex items-center gap-2 border border-white/30 px-6 py-3 rounded hover:bg-white hover:text-black transition-all">
-                        <i class="fas fa-shopping-cart"></i> <span data-i18n="btn_carousell">前往 Carousell 專業網店</span>
-                     </a>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 items-stretch">
-                <div class="flex items-start gap-4 p-8 border border-gray-800 rounded-lg bg-gray-900/50">
-                    <i class="fas fa-microscope gold-text text-3xl mt-1"></i>
-                    <div>
-                        <h5 class="font-bold text-xl mb-3" data-i18n="craft_point1_title">精通提琴音色調整</h5>
-                        <p class="text-gray-400 leading-relaxed" data-i18n="craft_point1_desc">透過調整音柱位置與弦碼弧度，釋放樂器潛在的最佳音色。</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4 p-8 border border-gray-800 rounded-lg bg-gray-900/50">
-                    <i class="fas fa-shield-alt gold-text text-3xl mt-1"></i>
-                    <div>
-                        <h5 class="font-bold text-xl mb-3" data-i18n="craft_point2_title">專業修復顧問</h5>
-                        <p class="text-gray-400 leading-relaxed" data-i18n="craft_point2_desc">提供破損修復、指板修平及換弦等精密手工服務。</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 社交媒體與片段 -->
-    <section id="videos" class="py-20 bg-white px-6 md:px-20 border-b">
-        <div class="max-w-4xl mx-auto text-center">
-            <h3 class="text-3xl font-bold serif mb-6" data-i18n="video_title">關注社交平台與示範片段</h3>
-            <p class="text-gray-600 mb-10 leading-relaxed" data-i18n="video_desc">我會定期在個人平台分享技巧、練習指引以及樂器製作心得。</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-12 sm:gap-24">
-                <a href="https://www.youtube.com/@lawrencetambass" target="_blank" class="group inline-flex flex-col items-center">
-                    <div class="w-24 h-24 bg-red-600 text-white rounded-full flex items-center justify-center text-4xl shadow-xl group-hover:scale-110 transition-transform mb-4">
-                        <i class="fab fa-youtube"></i>
-                    </div>
-                    <span class="text-xl font-bold text-gray-800 group-hover:text-red-600 transition-colors" data-i18n="yt_channel">YouTube 頻道</span>
-                </a>
-                <a href="https://www.facebook.com/LawrenceTamDoubleBass" target="_blank" class="group inline-flex flex-col items-center">
-                    <div class="w-24 h-24 bg-[#1877F2] text-white rounded-full flex items-center justify-center text-4xl shadow-xl group-hover:scale-110 transition-transform mb-4">
-                        <i class="fab fa-facebook-f"></i>
-                    </div>
-                    <span class="text-xl font-bold text-gray-800 group-hover:text-[#1877F2] transition-colors" data-i18n="fb_page">Facebook 專頁</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- 上課地點區 -->
-    <section id="location" class="py-20 bg-gray-50 px-6 md:px-20 border-b">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-12">
-                <h3 class="text-3xl font-bold serif mb-4" data-i18n="loc_title">上課地點</h3>
-                <p class="text-gray-600" data-i18n="loc_desc">工作室位於交通便利的佐敦區，環境專業安靜，適合專心研習音樂。</p>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row max-w-5xl mx-auto border border-gray-100">
-                <div class="p-8 md:w-1/2 flex flex-col justify-center">
-                    <div class="flex items-start gap-4 mb-6">
-                        <div class="w-12 h-12 gold-bg rounded-full flex items-center justify-center text-black flex-shrink-0">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-xl font-bold mb-2" data-i18n="loc_addr_label">工作室地址</h4>
-                            <p class="text-gray-600 leading-relaxed" data-i18n="loc_addr">
-                                佐敦上海街26-28號<br>
-                                恒邦商業中心14樓5室
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-4 mb-8">
-                        <div class="w-12 h-12 gold-bg rounded-full flex items-center justify-center text-black flex-shrink-0">
-                            <i class="fas fa-subway"></i>
-                        </div>
-                        <div>
-                            <h4 class="text-xl font-bold mb-2" data-i18n="loc_transport_label">交通建議</h4>
-                            <div class="text-gray-600 space-y-2">
-                                <p class="flex items-center gap-2"><span class="w-2 h-2 gold-bg rounded-full"></span> <span data-i18n="loc_jordan">佐敦站 C2 出口 (步行約 5 分鐘)</span></p>
-                                <p class="flex items-center gap-2"><span class="w-2 h-2 gold-bg rounded-full"></span> <span data-i18n="loc_austin">柯士甸站 F 出口 (步行約 3 分鐘)</span></p>
-                            </div>
-                        </div>
-                    </div>
-                    <a href="https://maps.app.goo.gl/M45vuArd74tRZd7i6" target="_blank" class="inline-flex items-center justify-center bg-gray-900 text-white font-bold py-3 px-6 rounded-lg hover:bg-black transition-all">
-                        <i class="fas fa-external-link-alt mr-2"></i> <span data-i18n="btn_map">在 Google Maps 中開啟</span>
-                    </a>
-                </div>
-                <div class="md:w-1/2 bg-gray-200 h-80 md:h-auto relative">
-                    <iframe src="https://maps.google.com/maps?q=%E6%81%92%E9%82%A6%E5%95%86%E6%A5%AD%E4%B8%AD%E5%BF%83&t=&z=17&ie=UTF8&iwloc=&output=embed" class="w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 聯絡與腳部 -->
-    <section id="contact" class="py-24 bg-gray-900 text-white px-6 md:px-20">
-        <div class="max-w-6xl mx-auto text-center">
-            <h3 class="text-4xl font-bold serif mb-8 gold-text" data-i18n="contact_title">聯絡及諮詢</h3>
-            <p class="text-gray-400 mb-12 text-lg" data-i18n="contact_desc">歡迎透過以下方式聯繫，或直接填寫報名表格與逛逛商店。</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
-                <!-- 郵件區：改為點擊複製 -->
-                <div onclick="copyEmail()" class="cursor-pointer group flex flex-col items-center gap-4 hover:scale-105 transition-all">
-                    <div class="w-16 h-16 md:w-20 md:h-20 gold-bg rounded-full flex items-center justify-center text-black text-2xl md:text-3xl group-hover:bg-yellow-500 shadow-xl">
-                        <i class="fas fa-copy"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1" data-i18n="email_label">Email (點擊複製)</p>
-                        <p class="text-sm md:text-base font-medium break-all">lawrence.tam@chicagoviolinshk.com</p>
-                    </div>
-                </div>
-                <!-- WhatsApp 區 -->
-                <a href="https://wa.me/85264473995" target="_blank" class="group flex flex-col items-center gap-4 hover:scale-105 transition-all">
-                    <div class="w-16 h-16 md:w-20 md:h-20 gold-bg rounded-full flex items-center justify-center text-black text-2xl md:text-3xl group-hover:bg-yellow-500 shadow-xl">
-                        <i class="fab fa-whatsapp"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1" data-i18n="wa_label">WhatsApp</p>
-                        <p class="text-sm md:text-base font-medium">+852 6447 3995</p>
-                    </div>
-                </a>
-                <!-- 表格區 -->
-                <a href="https://forms.gle/xk7CkR2RhxB2kfZd7" target="_blank" class="group flex flex-col items-center gap-4 hover:scale-105 transition-all">
-                    <div class="w-16 h-16 md:w-20 md:h-20 bg-white text-black rounded-full flex items-center justify-center text-2xl md:text-3xl group-hover:bg-gray-200 shadow-xl">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1" data-i18n="form_label">Enrollment Form</p>
-                        <p class="text-sm md:text-base font-medium" data-i18n="form_link_text">立即填寫</p>
-                    </div>
-                </a>
-                <!-- Carousell 區 -->
-                <a href="https://carousell.app.link/aXB4DWi7z1b" target="_blank" class="group flex flex-col items-center gap-4 hover:scale-105 transition-all">
-                    <div class="w-16 h-16 md:w-20 md:h-20 bg-red-600 text-white rounded-full flex items-center justify-center text-2xl md:text-3xl group-hover:bg-red-700 shadow-xl">
-                        <i class="fas fa-shopping-bag"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1" data-i18n="carousell_label">Carousell Store</p>
-                        <p class="text-sm md:text-base font-medium" data-i18n="carousell_link_text">前往商店</p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <footer class="bg-black py-10 text-center text-gray-600 text-sm border-t border-gray-800">
-        <p class="mb-6">© 2026 Lawrence Tam Lok Hang. All Rights Reserved.</p>
-        <div class="flex justify-center space-x-10 text-2xl">
-            <a href="https://www.facebook.com/LawrenceTamDoubleBass" target="_blank" class="hover:text-[#1877F2] transition-colors"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.youtube.com/@lawrencetambass" target="_blank" class="hover:text-red-600 transition-colors"><i class="fab fa-youtube"></i></a>
-            <a href="https://carousell.app.link/aXB4DWi7z1b" target="_blank" class="hover:text-red-500 transition-colors"><i class="fas fa-shopping-bag"></i></a>
-            <a href="https://wa.me/85264473995" target="_blank" class="hover:text-green-500 transition-colors"><i class="fab fa-whatsapp"></i></a>
-        </div>
-    </footer>
+    <!-- 用於渲染 PDF 的隱藏 Canvas -->
+    <canvas id="renderCanvas" style="display:none;"></canvas>
 
     <script>
-        // --- 複製郵件功能 ---
-        function copyEmail() {
-            const email = "lawrence.tam@chicagoviolinshk.com";
-            const el = document.createElement('textarea');
-            el.value = email;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            const toast = document.getElementById("copy-toast");
-            toast.innerHTML = currentLang === 'zh' ? "已複製郵件地址！" : "Email address copied!";
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }
+        const { PDFDocument, rgb, degrees, StandardFonts } = PDFLib;
+        // 設定 PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        // --- 語言資料庫 ---
-        const i18n = {
-            zh: {
-                nav_home: "首頁", nav_about: "個人簡介", nav_qualifications: "專業資格", nav_pricing: "價目表", nav_craft: "提琴製作", nav_videos: "示範影片", nav_location: "上課地點", nav_apply: "立即報名",
-                hero_sub: "Cellist | Double Bassist | Luthier", hero_title: "Lawrence Tam Lok Hang",
-                hero_desc: "結合卓越演奏技巧與深厚提琴製作造詣，<br>為每一位學生開啟通往音樂藝術與職人工藝的大門。",
-                btn_more: "了解更多", btn_apply_now: "線上報名", exp_years: "教學年資", about_title: "關於譚老師 (Lawrence Tam)",
-                about_p1: "譚氏身兼低音大提琴演奏家、大提琴教育家與專業提琴製作導師。於 2013 年畢業於香港演藝學院取得音樂學士學位，並於同年獲選加入<b>荷蘭國家青年交響樂團 (NJO)</b> 參與夏季巡演。2019 年，他遠赴美國「芝加哥提琴製作學院 (CSVM)」深造，將藝術演奏與科學工藝完美融合。",
-                about_p2: "憑藉對樂器物理結構的透徹理解，譚氏在教學中融入了「工藝思維」，讓學生能透過對音色的精確掌握，突破技術瓶頸。他特別擅長啟盟教學，致力於在嚴謹的基礎訓練與對音樂的熱愛之間取得平衡，引領學生成為具備全面修養的音樂人。",
-                about_h_performance: "舞台演奏", about_desc_performance: "演藝學院學士 / NJO 成員",
-                about_h_craft: "職人工藝", about_desc_craft: "芝加哥 CSVM 專業畢業",
-                section_qual: "專業資格與資歷",
-                card_1_title: "學術及文憑", card_1_list: ["香港演藝學院 音樂學士 (低音大提琴)", "荷蘭國家青年交響樂團 (NJO) 2013 夏季巡演成員", "師承名家宗小謙老師主修低音大提琴", "聖三一學院 ATCL 大提琴文憑", "聖三一學院 ATCL 低音大提琴文憑"],
-                card_2_title: "教學經驗", card_2_list: ["康文署音樂事務處導師 (2010-2019)", "多間中小學低音大提琴/大提琴導師", "多間學校樂團指揮", "指導 5 歲學生通過 5 級考級"],
-                card_3_title: "專業工藝", card_3_list: ["Chicago School of Violin Making 畢業", "師承名家 Antoine Nédélec", "破格提前完成三年制工藝課程", "提琴維修、調整與製作專家"],
-                price_title: "課程價目表", price_desc: "透明合理的收費，提供最優質的音樂教育與專業諮詢。",
-                price_note: "* 價格可能隨課程內容與學員程度有所調整，詳情請直接與譚老師聯繫。",
-                btn_whatsapp: "立即 WhatsApp 查詢", btn_form: "填寫線上報名表", btn_carousell: "前往 Carousell 專業網店",
-                craft_subtitle: "不只是演奏家，更是樂器醫師與職人。",
-                craft_p: "在芝加哥期間，深造小、中、大提琴製作。這種背景讓譚老師能從物理構造層面解決音色問題。",
-                craft_point1_title: "精通提琴音色調整", craft_point1_desc: "透過調整音柱位置與弦碼弧度，釋放樂器最佳音色。",
-                craft_point2_title: "專業修復顧問", craft_point2_desc: "提供破損修復、指板修平及換弦等精密服務。",
-                video_title: "關注社交平台與示範片段", video_desc: "定期在平台分享演奏技巧、練習指引以及樂器製作心得。",
-                yt_channel: "YouTube 頻道", fb_page: "Facebook 專頁",
-                loc_title: "上課地點", loc_desc: "工作室位於佐敦區，環境專業安靜。",
-                loc_addr_label: "工作室地址", loc_addr: "佐敦上海街26-28號<br>恒邦商業中心14樓5室",
-                loc_transport_label: "交通建議", loc_jordan: "佐敦站 C2 出口 (步行約 5 分鐘)", loc_austin: "柯士甸站 F 出口 (步行約 3 分鐘)",
-                btn_map: "在 Google Maps 中開啟", contact_title: "聯絡及諮詢", 
-                contact_desc: "歡迎透過以下方式聯繫，或直接填寫報名表格與逛逛商店。",
-                email_label: "Email (點擊複製)", wa_label: "WhatsApp 諮詢", form_label: "線上報名表", form_link_text: "立即填寫",
-                carousell_label: "Carousell 網店", carousell_link_text: "前往商店"
-            },
-            en: {
-                nav_home: "Home", nav_about: "About", nav_qualifications: "Qualifications", nav_pricing: "Pricing", nav_craft: "Luthiery", nav_videos: "Videos", nav_location: "Location", nav_apply: "Enroll Now",
-                hero_sub: "Cellist | Double Bassist | Luthier", hero_title: "Lawrence Tam Lok Hang",
-                hero_desc: "Combining masterful performance with exquisite craftsmanship,<br>opening doors to music and artistry for every student.",
-                btn_more: "Learn More", btn_apply_now: "Apply Online", exp_years: "Experience", about_title: "About Lawrence Tam",
-                about_p1: "Lawrence is a double bassist, cellist, and professional luthier. Graduating from HKAPA in 2013, he was selected in the same year to perform with the <b>National Youth Orchestra of the Netherlands (NJO)</b>. In 2019, he specialized in violin making at the CSVM in Chicago, bridging the gap between artistic performance and technical precision.",
-                about_p2: "Leveraging his deep understanding of instrument physics, Lawrence integrates a 'craftsmanship mindset' into his teaching, helping students overcome technical plateaus through tonal mastery. He excels in nurturing beginners, balancing rigorous training with a genuine passion for music.",
-                about_h_performance: "Performance", about_desc_performance: "BMus HKAPA / NJO Member",
-                about_h_craft: "Craftsmanship", about_desc_craft: "CSVM Chicago Graduate",
-                section_qual: "Qualifications",
-                card_1_title: "Academic & Diplomas", card_1_list: ["BMus, HKAPA", "National Youth Orchestra of the Netherlands (NJO) 2013 Summer Project", "Studied under Eddie Zong", "ATCL Cello Diploma", "ATCL Double Bass Diploma"],
-                card_2_title: "Teaching Experience", card_2_list: ["LCSD Instructor (2010-2019)", "Tutor in various schools", "Orchestra Conductor", "Guided 5-yo students"],
-                card_3_title: "Craftsmanship", card_3_list: ["CSVM Graduate", "Studied under Antoine Nédélec", "Fast-tracked completion", "Expert in repair & making"],
-                price_title: "Course Pricing", price_desc: "Transparent fees for quality education.",
-                price_note: "* Prices may vary. Contact Lawrence for details.",
-                btn_whatsapp: "WhatsApp Enquiry", btn_form: "Online Enrollment Form", btn_carousell: "Visit Carousell Store",
-                craft_subtitle: "More than a performer, an instrument doctor.",
-                craft_p: "Studied in Chicago to solve sound issues from a structural perspective.",
-                craft_point1_title: "Sound Adjustment", craft_point1_desc: "Optimize tone through post and bridge adjustments.",
-                craft_point2_title: "Repair Consultant", craft_point2_desc: "Expertise in restoration and maintenance.",
-                video_title: "Social Media", video_desc: "Sharing performance techniques and luthier tips.",
-                yt_channel: "YouTube Channel", fb_page: "Facebook Page",
-                loc_title: "Location", loc_desc: "Studio in Jordan, professional and quiet.",
-                loc_addr_label: "Studio Address", loc_addr: "Hang Bong Commercial Centre, Jordan",
-                loc_transport_label: "Transportation", loc_jordan: "Jordan Stn C2 (5 min walk)", loc_austin: "Austin Stn F (3 min walk)",
-                btn_map: "Open in Maps", contact_title: "Contact", 
-                contact_desc: "Contact via following methods, fill out the form, or visit my store.",
-                email_label: "Email (Click to Copy)", wa_label: "WhatsApp", form_label: "Enrollment Form", form_link_text: "Fill in now",
-                carousell_label: "Carousell Store", carousell_link_text: "Visit Now"
+        const fileInput = document.getElementById('pdfFile');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const pdfBtn = document.getElementById('downloadPdfBtn');
+        const jpgBtn = document.getElementById('downloadJpgBtn');
+        const statusMsg = document.getElementById('statusMessage');
+        const wmTextInput = document.getElementById('wmText');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileNameDisplay.innerText = e.target.files[0].name;
+                fileLabel.classList.add('border-blue-400', 'bg-blue-50');
             }
+        });
+
+        const showStatus = (text, type = 'info') => {
+            statusMsg.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700', 'bg-green-100', 'text-green-700');
+            if (type === 'error') statusMsg.classList.add('bg-red-100', 'text-red-700');
+            else if (type === 'success') statusMsg.classList.add('bg-green-100', 'text-green-700');
+            else statusMsg.classList.add('bg-blue-100', 'text-blue-700');
+            statusMsg.innerText = text;
+            statusMsg.classList.remove('hidden');
         };
 
-        let currentLang = 'zh';
-        function changeLanguage(lang) {
-            currentLang = lang;
-            document.documentElement.lang = lang === 'zh' ? 'zh-HK' : 'en';
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('lang-' + lang)?.classList.add('active');
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const k = el.getAttribute('data-i18n');
-                if (i18n[lang][k]) el.innerHTML = i18n[lang][k];
-            });
-            updateList('list-qual-academic', i18n[lang].card_1_list);
-            updateList('list-qual-teaching', i18n[lang].card_2_list);
-            updateList('list-qual-craft', i18n[lang].card_3_list);
-        }
-        function updateList(id, items) {
-            const l = document.getElementById(id);
-            if (l) l.innerHTML = items.map(i => `<li>• ${i}</li>`).join('');
-        }
-        function toggleMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); document.getElementById('mobile-menu').classList.toggle('flex'); }
+        // 核心功能：合成浮水印
+        async function getWatermarkedPdf() {
+            const file = fileInput.files[0];
+            const text = wmTextInput.value.trim();
+            if (!file || !text) throw new Error('請確認已選擇檔案並輸入文字');
 
-        window.onload = () => changeLanguage('zh');
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(arrayBuffer);
+            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+            const pages = pdfDoc.getPages();
+
+            pages.forEach(page => {
+                const { width, height } = page.getSize();
+                const stepX = 220; 
+                const stepY = 160; 
+                for (let x = -width; x < width * 2; x += stepX) {
+                    for (let y = -height; y < height * 2; y += stepY) {
+                        page.drawText(text, {
+                            x: x, y: y, size: 28, font: font,
+                            color: rgb(0.6, 0.6, 0.6), opacity: 0.25, 
+                            rotate: degrees(-30), // 已將旋轉角度修改為 -30 度
+                        });
+                    }
+                }
+            });
+            return await pdfDoc.save();
+        }
+
+        // 下載 PDF
+        pdfBtn.addEventListener('click', async () => {
+            try {
+                pdfBtn.disabled = true;
+                const originalText = pdfBtn.innerHTML;
+                pdfBtn.innerHTML = '<span class="loader"></span> 處理中...';
+                showStatus('正在生成 PDF...');
+
+                const pdfBytes = await getWatermarkedPdf();
+                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `Watermarked_${fileInput.files[0].name}`;
+                link.click();
+
+                showStatus('✅ PDF 下載成功', 'success');
+                pdfBtn.innerHTML = originalText;
+            } catch (err) {
+                showStatus(err.message, 'error');
+            } finally {
+                pdfBtn.disabled = false;
+            }
+        });
+
+        // 下載 JPG (轉圖邏輯)
+        jpgBtn.addEventListener('click', async () => {
+            try {
+                jpgBtn.disabled = true;
+                const originalText = jpgBtn.innerHTML;
+                jpgBtn.innerHTML = '<span class="loader"></span> 轉圖中...';
+                showStatus('正在合成浮水印並轉換成圖片...');
+
+                const pdfBytes = await getWatermarkedPdf();
+                
+                const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
+                const pdf = await loadingTask.promise;
+                const zip = new JSZip();
+                const canvas = document.getElementById('renderCanvas');
+                const ctx = canvas.getContext('2d');
+
+                showStatus(`正在處理第 1 / ${pdf.numPages} 頁...`);
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 2.0 }); 
+                    
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport
+                    }).promise;
+
+                    const imageData = canvas.toDataURL('image/jpeg', 0.85);
+                    const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, "");
+                    
+                    zip.file(`page_${i}.jpg`, base64Data, { base64: true });
+                    showStatus(`正在處理第 ${i} / ${pdf.numPages} 頁...`);
+                }
+
+                showStatus('正在打包 ZIP...');
+                const content = await zip.generateAsync({ type: "blob" });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `Images_${fileInput.files[0].name.replace('.pdf', '')}.zip`;
+                link.click();
+
+                showStatus('✅ JPG 打包下載成功', 'success');
+                jpgBtn.innerHTML = originalText;
+            } catch (err) {
+                console.error(err);
+                showStatus('轉換失敗：' + err.message, 'error');
+            } finally {
+                jpgBtn.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
