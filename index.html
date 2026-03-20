@@ -3,153 +3,400 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF 網格浮水印產生器</title>
+    <title>Lawrence Tam 專屬浮水印工具</title>
     <!-- 引入必要的函式庫 -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Inter:wght@400;600;700&display=swap');
         
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: #f1f5f9;
             min-height: 100vh;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .control-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
         }
 
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid #fff;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            animation: spin 1s linear infinite;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.8s linear infinite;
             display: inline-block;
-            vertical-align: middle;
-            margin-right: 8px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        input[type=range] {
+            height: 5px;
+            -webkit-appearance: none;
+            background: #cbd5e1;
+            border-radius: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .toggle-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .toggle-section.active {
+            max-height: 800px;
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body class="p-4 md:p-8">
 
-    <div class="glass-card w-full max-w-md rounded-2xl shadow-2xl p-8">
-        <div class="text-center mb-8">
-            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center gap-4 mb-8">
+            <div class="bg-slate-800 p-3 rounded-xl shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-gray-800">PDF 網格浮水印</h1>
-            <p class="text-gray-500 text-sm mt-2">安全、快速、本地處理</p>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">Lawrence Tam 浮水印工具</h1>
+                <p class="text-slate-500 text-sm font-medium">個人教學專用 • 網格浮水印與 QR Code 整合</p>
+            </div>
         </div>
 
-        <div class="space-y-5">
-            <!-- 浮水印文字輸入 -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">浮水印文字</label>
-                <input type="text" id="wmText" value="INTERNAL USE ONLY" 
-                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    placeholder="輸入要顯示的文字...">
-            </div>
-
-            <!-- 檔案上傳區 -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">選擇 PDF 檔案</label>
-                <div class="relative">
-                    <input type="file" id="pdfFile" accept="application/pdf" class="hidden">
-                    <label for="pdfFile" id="fileLabel" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <span class="text-xs text-gray-500 px-4 text-center" id="fileNameDisplay">點擊或拖放 PDF</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left: Settings Panel -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- 1. File Upload -->
+                <div class="control-panel p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <span class="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-[10px]">1</span> 選擇檔案
+                    </h3>
+                    <input type="file" id="fileInput" accept="application/pdf,image/jpeg,image/png" class="hidden">
+                    <label for="fileInput" id="fileLabel" class="flex flex-col items-center justify-center w-full py-6 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-all">
+                        <div id="fileStatus" class="text-center px-4">
+                            <p class="text-sm text-slate-500 font-bold" id="fileNameDisplay">點擊上傳 PDF 或 圖片</p>
+                            <p class="text-[10px] text-slate-400 mt-1">本地安全處理，檔案不外傳</p>
+                        </div>
                     </label>
+                </div>
+
+                <!-- 2. QR Code Settings -->
+                <div class="control-panel p-6 rounded-2xl shadow-sm space-y-4 bg-white border-blue-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <span class="w-5 h-5 bg-blue-600 text-white rounded flex items-center justify-center text-[10px]">2</span> 右下角 QR Code
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="enableQr" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:width-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ml-2 text-xs font-bold text-slate-500">啟用</span>
+                        </label>
+                    </div>
+                    
+                    <div id="qrContentSection" class="toggle-section active space-y-4 pt-2 border-t border-slate-50">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">連結網址</label>
+                            <input type="url" id="qrUrl" value="https://lawrencetambass.github.io/info/" 
+                                class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">標題文字 (選填)</label>
+                            <input type="text" id="qrText" value="課程查詢" 
+                                class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">QR 大小 (<span id="qrSizeText">60</span>px)</label>
+                                <input type="range" id="qrSizeSlider" min="30" max="150" value="60" class="w-full">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">文字大小 (<span id="qrFontSizeText">12</span>px)</label>
+                                <input type="range" id="qrFontSizeSlider" min="8" max="24" value="12" class="w-full">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Watermark Controls -->
+                <div class="control-panel p-6 rounded-2xl shadow-sm space-y-5">
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                        <span class="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-[10px]">3</span> 網格浮水印設定
+                    </h3>
+                    
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">文字內容</label>
+                        <input type="text" id="wmText" value="Lawrence Tam 香港低音大提琴導師" 
+                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">傾斜角度 (<span id="angleText">-30</span>°)</label>
+                            <input type="range" id="angleSlider" min="-90" max="90" value="-30" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">文字大小 (<span id="sizeText">24</span>px)</label>
+                            <input type="range" id="sizeSlider" min="10" max="60" value="24" class="w-full">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">網格間距 (<span id="spacingText">300</span>)</label>
+                            <input type="range" id="spacingSlider" min="80" max="600" value="300" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">透明度 (<span id="opacityText">20</span>%)</label>
+                            <input type="range" id="opacitySlider" min="5" max="90" value="20" class="w-full">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">浮水印顏色</label>
+                        <div class="flex gap-2">
+                            <input type="color" id="colorPicker" value="#808080" class="h-8 w-12 rounded cursor-pointer border-none bg-transparent">
+                            <span class="text-xs text-slate-500 self-center font-mono" id="hexDisplay">#808080</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- 操作按鈕 -->
-            <div class="grid grid-cols-1 gap-3">
-                <button id="downloadPdfBtn" class="flex items-center justify-center w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50">
-                    下載浮水印 PDF
-                </button>
-                <button id="downloadJpgBtn" class="flex items-center justify-center w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition-all disabled:opacity-50">
-                    下載 JPG 圖片 (ZIP)
-                </button>
+            <!-- Right: Action & Status -->
+            <div class="lg:col-span-7 space-y-6">
+                <!-- Main Action Card -->
+                <div class="control-panel p-10 rounded-2xl shadow-sm text-center">
+                    <div class="mb-8">
+                        <div class="inline-block p-5 bg-blue-50 rounded-3xl mb-4 text-blue-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">開始下載</h2>
+                        <p class="text-sm text-slate-500 max-w-sm mx-auto mt-2">點擊下方按鈕，系統將自動為每一頁添加網格浮水印與 QR Code 標記。</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button id="downloadPdfBtn" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all disabled:opacity-50">
+                            下載 PDF 
+                        </button>
+                        <button id="downloadJpgBtn" class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all disabled:opacity-50">
+                            下載圖片包 (ZIP)
+                        </button>
+                    </div>
+
+                    <div id="statusMessage" class="mt-8 hidden p-4 rounded-xl text-sm font-bold"></div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="bg-indigo-900 text-white p-6 rounded-2xl shadow-xl">
+                    <h4 class="font-bold text-sm mb-3 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        系統更新日誌
+                    </h4>
+                    <div class="grid grid-cols-1 gap-2 text-xs opacity-90">
+                        <p>• <span class="text-amber-400 font-bold">QR Code 強化：</span>現在可以為 QR Code 加入置中標題（如：課程查詢）。</p>
+                        <p>• <span class="text-blue-300 font-bold">自定義字體：</span>完美解決 PDF 中文顯示與下載錯誤問題。</p>
+                        <p>• 本地化處理：所有浮水印與檔案轉換皆在本地端瀏覽器完成。</p>
+                    </div>
+                </div>
             </div>
-
-            <!-- 狀態提示 -->
-            <div id="statusMessage" class="hidden text-center text-sm font-medium p-2 rounded-lg"></div>
-        </div>
-
-        <div class="mt-8 pt-4 border-t border-gray-100 text-center">
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest">Local Browser Processing • No Server Upload</p>
         </div>
     </div>
 
-    <!-- 用於渲染 PDF 的隱藏 Canvas -->
+    <div id="qrcode-hidden" style="display:none;"></div>
     <canvas id="renderCanvas" style="display:none;"></canvas>
 
     <script>
-        const { PDFDocument, rgb, degrees, StandardFonts } = PDFLib;
-        // 設定 PDF.js Worker
+        const { PDFDocument, rgb, degrees } = PDFLib;
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        const fileInput = document.getElementById('pdfFile');
-        const fileLabel = document.getElementById('fileLabel');
+        const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
-        const pdfBtn = document.getElementById('downloadPdfBtn');
-        const jpgBtn = document.getElementById('downloadJpgBtn');
+        const fileLabel = document.getElementById('fileLabel');
         const statusMsg = document.getElementById('statusMessage');
-        const wmTextInput = document.getElementById('wmText');
+        const colorPicker = document.getElementById('colorPicker');
+        const hexDisplay = document.getElementById('hexDisplay');
+        const qrUrlInput = document.getElementById('qrUrl');
+        const qrTextInput = document.getElementById('qrText');
+        const enableQrCheckbox = document.getElementById('enableQr');
+        const qrSection = document.getElementById('qrContentSection');
 
-        fileInput.addEventListener('change', (e) => {
+        const sliders = {
+            angle: document.getElementById('angleSlider'),
+            size: document.getElementById('sizeSlider'),
+            spacing: document.getElementById('spacingSlider'),
+            opacity: document.getElementById('opacitySlider'),
+            qrSize: document.getElementById('qrSizeSlider'),
+            qrFontSize: document.getElementById('qrFontSizeSlider')
+        };
+        const displays = {
+            angle: document.getElementById('angleText'),
+            size: document.getElementById('sizeText'),
+            spacing: document.getElementById('spacingText'),
+            opacity: document.getElementById('opacityText'),
+            qrSize: document.getElementById('qrSizeText'),
+            qrFontSize: document.getElementById('qrFontSizeText')
+        };
+
+        Object.keys(sliders).forEach(key => {
+            sliders[key].oninput = () => displays[key].innerText = sliders[key].value;
+        });
+        colorPicker.oninput = () => hexDisplay.innerText = colorPicker.value.toUpperCase();
+
+        enableQrCheckbox.onchange = () => {
+            if (enableQrCheckbox.checked) qrSection.classList.add('active');
+            else qrSection.classList.remove('active');
+        };
+
+        fileInput.onchange = (e) => {
             if (e.target.files.length > 0) {
                 fileNameDisplay.innerText = e.target.files[0].name;
                 fileLabel.classList.add('border-blue-400', 'bg-blue-50');
             }
-        });
-
-        const showStatus = (text, type = 'info') => {
-            statusMsg.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-blue-100', 'text-blue-700', 'bg-green-100', 'text-green-700');
-            if (type === 'error') statusMsg.classList.add('bg-red-100', 'text-red-700');
-            else if (type === 'success') statusMsg.classList.add('bg-green-100', 'text-green-700');
-            else statusMsg.classList.add('bg-blue-100', 'text-blue-700');
-            statusMsg.innerText = text;
-            statusMsg.classList.remove('hidden');
         };
 
-        // 核心功能：合成浮水印
-        async function getWatermarkedPdf() {
-            const file = fileInput.files[0];
-            const text = wmTextInput.value.trim();
-            if (!file || !text) throw new Error('請確認已選擇檔案並輸入文字');
+        const showStatus = (text, type = 'info') => {
+            statusMsg.className = "mt-8 p-4 rounded-xl text-sm font-bold block transition-all";
+            if (type === 'error') statusMsg.classList.add('bg-red-50', 'text-red-600');
+            else if (type === 'success') statusMsg.classList.add('bg-green-50', 'text-green-600');
+            else statusMsg.classList.add('bg-blue-50', 'text-blue-600');
+            statusMsg.innerText = text;
+        };
 
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16) / 255;
+            const g = parseInt(hex.slice(3, 5), 16) / 255;
+            const b = parseInt(hex.slice(5, 7), 16) / 255;
+            return { r, g, b };
+        }
+
+        async function generateQrCodeDataUrl(url, size) {
+            return new Promise((resolve) => {
+                const container = document.getElementById('qrcode-hidden');
+                container.innerHTML = "";
+                const qrcode = new QRCode(container, {
+                    text: url,
+                    width: size * 2,
+                    height: size * 2,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                setTimeout(() => {
+                    const img = container.querySelector('img');
+                    if (img) resolve(img.src);
+                    else resolve(container.querySelector('canvas').toDataURL("image/png"));
+                }, 150);
+            });
+        }
+
+        async function fetchFont() {
+            const url = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/SubsetOTF/TC/NotoSansTC-Regular.otf';
+            const fontBytes = await fetch(url).then(res => res.arrayBuffer());
+            return fontBytes;
+        }
+
+        async function processPdf() {
+            const file = fileInput.files[0];
+            const textContent = document.getElementById('wmText').value.trim();
+            const qrUrl = qrUrlInput.value.trim();
+            const qrText = qrTextInput.value.trim();
+            const useQr = enableQrCheckbox.checked;
+
+            if (!file || !textContent) throw new Error('請上傳檔案並確保文字不為空');
+
+            showStatus('正在載入中文字體庫...');
+            const fontBytes = await fetchFont();
+            
+            let pdfDoc;
             const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(arrayBuffer);
-            const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            if (file.type === "application/pdf") {
+                pdfDoc = await PDFDocument.load(arrayBuffer);
+            } else {
+                pdfDoc = await PDFDocument.create();
+                const image = file.type === "image/png" ? await pdfDoc.embedPng(arrayBuffer) : await pdfDoc.embedJpg(arrayBuffer);
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+            }
+
+            pdfDoc.registerFontkit(window.fontkit);
+            const customFont = await pdfDoc.embedFont(fontBytes);
             const pages = pdfDoc.getPages();
+            
+            const color = hexToRgb(colorPicker.value);
+            const angle = parseInt(sliders.angle.value);
+            const size = parseInt(sliders.size.value);
+            const step = parseInt(sliders.spacing.value);
+            const opacity = parseInt(sliders.opacity.value) / 100;
+            const qrSize = parseInt(sliders.qrSize.value);
+            const qrFontSize = parseInt(sliders.qrFontSize.value);
+
+            let qrImageEmbed = null;
+            if (useQr && qrUrl) {
+                const qrDataUrl = await generateQrCodeDataUrl(qrUrl, qrSize);
+                qrImageEmbed = await pdfDoc.embedPng(qrDataUrl);
+            }
 
             pages.forEach(page => {
                 const { width, height } = page.getSize();
-                const stepX = 220; 
-                const stepY = 160; 
-                for (let x = -width; x < width * 2; x += stepX) {
-                    for (let y = -height; y < height * 2; y += stepY) {
-                        page.drawText(text, {
-                            x: x, y: y, size: 28, font: font,
-                            color: rgb(0.6, 0.6, 0.6), opacity: 0.25, 
-                            rotate: degrees(-30), // 已將旋轉角度修改為 -30 度
+                
+                // 1. 繪製網格浮水印
+                for (let x = -width; x < width * 2; x += step) {
+                    for (let y = -height; y < height * 2; y += step * 0.8) {
+                        page.drawText(textContent, {
+                            x, y, size, font: customFont,
+                            color: rgb(color.r, color.g, color.b),
+                            opacity,
+                            rotate: degrees(angle),
+                        });
+                    }
+                }
+
+                // 2. 繪製右下角 QR Code 與標題
+                if (qrImageEmbed) {
+                    const margin = 20;
+                    const qrX = width - qrSize - margin;
+                    const qrY = margin;
+                    
+                    page.drawImage(qrImageEmbed, {
+                        x: qrX,
+                        y: qrY,
+                        width: qrSize,
+                        height: qrSize,
+                    });
+
+                    if (qrText) {
+                        const textWidth = customFont.widthOfTextAtSize(qrText, qrFontSize);
+                        // 置中對齊 QR Code
+                        const textX = qrX + (qrSize / 2) - (textWidth / 2);
+                        const textY = qrY + qrSize + 4; // QR Code 上方 4px
+                        
+                        page.drawText(qrText, {
+                            x: textX,
+                            y: textY,
+                            size: qrFontSize,
+                            font: customFont,
+                            color: rgb(0, 0, 0),
                         });
                     }
                 }
@@ -157,83 +404,67 @@
             return await pdfDoc.save();
         }
 
-        // 下載 PDF
-        pdfBtn.addEventListener('click', async () => {
-            try {
-                pdfBtn.disabled = true;
-                const originalText = pdfBtn.innerHTML;
-                pdfBtn.innerHTML = '<span class="loader"></span> 處理中...';
-                showStatus('正在生成 PDF...');
+        // 注入 fontkit
+        const script = document.createElement('script');
+        script.src = "https://unpkg.com/@pdf-lib/fontkit/dist/fontkit.umd.min.js";
+        document.head.appendChild(script);
 
-                const pdfBytes = await getWatermarkedPdf();
-                const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        document.getElementById('downloadPdfBtn').onclick = async () => {
+            const btn = document.getElementById('downloadPdfBtn');
+            try {
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loader"></span> 處理中...';
+                const bytes = await processPdf();
+                const blob = new Blob([bytes], { type: "application/pdf" });
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = `Watermarked_${fileInput.files[0].name}`;
+                link.download = `Watermarked_${fileInput.files[0].name.split('.')[0]}.pdf`;
                 link.click();
-
-                showStatus('✅ PDF 下載成功', 'success');
-                pdfBtn.innerHTML = originalText;
+                showStatus('✅ 下載成功', 'success');
+                btn.innerHTML = originalText;
             } catch (err) {
-                showStatus(err.message, 'error');
-            } finally {
-                pdfBtn.disabled = false;
-            }
-        });
+                console.error(err);
+                showStatus('錯誤: ' + err.message, 'error');
+                btn.innerText = '下載 PDF';
+            } finally { btn.disabled = false; }
+        };
 
-        // 下載 JPG (轉圖邏輯)
-        jpgBtn.addEventListener('click', async () => {
+        document.getElementById('downloadJpgBtn').onclick = async () => {
+            const btn = document.getElementById('downloadJpgBtn');
             try {
-                jpgBtn.disabled = true;
-                const originalText = jpgBtn.innerHTML;
-                jpgBtn.innerHTML = '<span class="loader"></span> 轉圖中...';
-                showStatus('正在合成浮水印並轉換成圖片...');
-
-                const pdfBytes = await getWatermarkedPdf();
-                
-                const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
-                const pdf = await loadingTask.promise;
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="loader"></span> 轉圖中...';
+                const bytes = await processPdf();
+                const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
                 const zip = new JSZip();
                 const canvas = document.getElementById('renderCanvas');
                 const ctx = canvas.getContext('2d');
 
-                showStatus(`正在處理第 1 / ${pdf.numPages} 頁...`);
-
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale: 2.0 }); 
-                    
                     canvas.height = viewport.height;
                     canvas.width = viewport.width;
-
-                    await page.render({
-                        canvasContext: ctx,
-                        viewport: viewport
-                    }).promise;
-
-                    const imageData = canvas.toDataURL('image/jpeg', 0.85);
-                    const base64Data = imageData.replace(/^data:image\/jpeg;base64,/, "");
-                    
-                    zip.file(`page_${i}.jpg`, base64Data, { base64: true });
-                    showStatus(`正在處理第 ${i} / ${pdf.numPages} 頁...`);
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+                    const img = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+                    zip.file(`Page_${i}.jpg`, img, { base64: true });
+                    showStatus(`圖片包處理進度: ${i} / ${pdf.numPages}`);
                 }
 
-                showStatus('正在打包 ZIP...');
-                const content = await zip.generateAsync({ type: "blob" });
+                const zipContent = await zip.generateAsync({ type: "blob" });
                 const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = `Images_${fileInput.files[0].name.replace('.pdf', '')}.zip`;
+                link.href = URL.createObjectURL(zipContent);
+                link.download = `Watermarked_Images.zip`;
                 link.click();
-
-                showStatus('✅ JPG 打包下載成功', 'success');
-                jpgBtn.innerHTML = originalText;
+                showStatus('✅ ZIP 圖片包下載完成', 'success');
+                btn.innerHTML = originalText;
             } catch (err) {
-                console.error(err);
-                showStatus('轉換失敗：' + err.message, 'error');
-            } finally {
-                jpgBtn.disabled = false;
-            }
-        });
+                showStatus(err.message, 'error');
+                btn.innerText = '下載圖片包 (ZIP)';
+            } finally { btn.disabled = false; }
+        };
     </script>
 </body>
 </html>
